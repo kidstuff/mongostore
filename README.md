@@ -24,7 +24,7 @@ Available on [godoc.org](http://www.godoc.org/github.com/kidstuff/mongostore).
     }
     defer dbsess.Close()
 
-    store := NewMongoStore(dbsess.DB("test").C("test_session"), "/", 3600, true,
+    store := NewMongoStore(dbsess.DB("test").C("test_session"), 3600, true,
 		[]byte("secret-key"))
 
     // Get a session.
