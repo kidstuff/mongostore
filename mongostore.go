@@ -18,19 +18,22 @@ var (
 	ErrInvalidId = errors.New("mgostore: invalid session id")
 )
 
-type MongoStore struct {
-	Codecs  []securecookie.Codec
-	Options *sessions.Options
-	coll    *mgo.Collection
-}
-
-// Session type
+// Session object store in MongoDB
 type Session struct {
 	Id       bson.ObjectId `bson:"_id,omitempty"`
 	Data     string
 	Modified time.Time
 }
 
+// MongoStore stores sessions in MongoDB
+type MongoStore struct {
+	Codecs  []securecookie.Codec
+	Options *sessions.Options
+	coll    *mgo.Collection
+}
+
+// NewMongoStore returns a new MongoStore.
+// Set ensureTTL to true let the database auto-remove expired object by maxAge.
 func NewMongoStore(c *mgo.Collection, path string, maxAge int,
 	ensureTTL bool, keyPairs ...[]byte) *MongoStore {
 	store := &MongoStore{
@@ -54,11 +57,14 @@ func NewMongoStore(c *mgo.Collection, path string, maxAge int,
 	return store
 }
 
+// Get registers and returns a session for the given name and session store.
+// It returns a new session if there are no sessions registered for the name.
 func (m *MongoStore) Get(r *http.Request, name string) (
 	*sessions.Session, error) {
 	return sessions.GetRegistry(r).Get(m, name)
 }
 
+// New returns a session for the given name without adding it to the registry.
 func (m *MongoStore) New(r *http.Request, name string) (
 	*sessions.Session, error) {
 	session := sessions.NewSession(m, name)
@@ -82,6 +88,7 @@ func (m *MongoStore) New(r *http.Request, name string) (
 	return session, err
 }
 
+// Save saves all sessions registered for the current request.
 func (m *MongoStore) Save(r *http.Request, w http.ResponseWriter,
 	session *sessions.Session) error {
 	if session.Options.MaxAge < 0 {
