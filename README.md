@@ -16,33 +16,30 @@ Depends on the [mgo](https://labix.org/v2/mgo) library.
 Available on [godoc.org](http://www.godoc.org/github.com/kidstuff/mongostore).
 
 ### Example
+    func foo(rw http.ResponseWriter, req *http.Request) {
+        // Fetch new store.
+        dbsess, err := mgo.Dial("localhost")
+        if err != nil {
+            panic(err)
+        }
+        defer dbsess.Close()
 
-    // Fetch new store.
-    dbsess, err := mgo.Dial("localhost")
-    if err != nil {
-        panic(err)
-    }
-    defer dbsess.Close()
+        store := mongostore.NewMongoStore(dbsess.DB("test").C("test_session"), 3600, true,
+            []byte("secret-key"))
 
-    store := NewMongoStore(dbsess.DB("test").C("test_session"), 3600, true,
-		[]byte("secret-key"))
+        // Get a session.
+        session, err := store.Get(req, "session-key")
+        if err != nil {
+            log.Println(err.Error())
+        }
 
-    // Get a session.
-	session, err = store.Get(req, "session-key")
-	if err != nil {
-        log.Error(err.Error())
-    }
+        // Add a value.
+        session.Values["foo"] = "bar"
 
-    // Add a value.
-    session.Values["foo"] = "bar"
+        // Save.
+        if err = sessions.Save(req, rw); err != nil {
+            log.Printf("Error saving session: %v", err)
+        }
 
-    // Save.
-    if err = sessions.Save(req, rsp); err != nil {
-        t.Fatalf("Error saving session: %v", err)
-    }
-
-    // Delete session.
-    session.Options.MaxAge = -1
-    if err = sessions.Save(req, rsp); err != nil {
-        t.Fatalf("Error saving session: %v", err)
+        fmt.Fprintln(rw, "ok")
     }
