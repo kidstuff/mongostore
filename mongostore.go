@@ -29,6 +29,7 @@ type Session struct {
 type MongoStore struct {
 	Codecs  []securecookie.Codec
 	Options *sessions.Options
+	Token   TokenGetSeter
 	coll    *mgo.Collection
 }
 
@@ -41,7 +42,8 @@ func NewMongoStore(c *mgo.Collection, maxAge int, ensureTTL bool,
 		Options: &sessions.Options{
 			MaxAge: maxAge,
 		},
-		coll: c,
+		Token: &CookieToken{},
+		coll:  c,
 	}
 
 	if ensureTTL {
@@ -73,8 +75,8 @@ func (m *MongoStore) New(r *http.Request, name string) (
 	}
 	session.IsNew = true
 	var err error
-	if cook, errCookie := r.Cookie(name); errCookie == nil {
-		err = securecookie.DecodeMulti(name, cook.Value, &session.ID, m.Codecs...)
+	if cook, errToken := m.Token.GetToken(r, name); errToken == nil {
+		err = securecookie.DecodeMulti(name, cook, &session.ID, m.Codecs...)
 		if err == nil {
 			err = m.load(session)
 			if err == nil {
@@ -94,8 +96,7 @@ func (m *MongoStore) Save(r *http.Request, w http.ResponseWriter,
 		if err := m.delete(session); err != nil {
 			return err
 		}
-		http.SetCookie(w, sessions.NewCookie(session.Name(), "",
-			session.Options))
+		m.Token.SetToken(w, session.Name(), "", session.Options)
 		return nil
 	}
 
@@ -113,7 +114,7 @@ func (m *MongoStore) Save(r *http.Request, w http.ResponseWriter,
 		return err
 	}
 
-	http.SetCookie(w, sessions.NewCookie(session.Name(), encoded, session.Options))
+	m.Token.SetToken(w, session.Name(), encoded, session.Options)
 	return nil
 }
 
