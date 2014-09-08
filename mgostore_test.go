@@ -9,7 +9,7 @@ package mongostore
 import (
 	"encoding/gob"
 	"github.com/gorilla/sessions"
-	"labix.org/v2/mgo"
+	"gopkg.in/mgo.v2"
 	"net/http"
 	"net/http/httptest"
 	"testing"
