@@ -40,6 +40,7 @@ func NewMongoStore(c *mgo.Collection, maxAge int, ensureTTL bool,
 	store := &MongoStore{
 		Codecs: securecookie.CodecsFromPairs(keyPairs...),
 		Options: &sessions.Options{
+			Path: "/",
 			MaxAge: maxAge,
 		},
 		Token: &CookieToken{},
