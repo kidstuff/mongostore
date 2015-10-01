@@ -71,8 +71,11 @@ func (m *MongoStore) New(r *http.Request, name string) (
 	*sessions.Session, error) {
 	session := sessions.NewSession(m, name)
 	session.Options = &sessions.Options{
-		Path:   m.Options.Path,
-		MaxAge: m.Options.MaxAge,
+		Path:     m.Options.Path,
+		MaxAge:   m.Options.MaxAge,
+		Domain:   m.Options.Domain,
+		Secure:   m.Options.Secure,
+		HttpOnly: m.Options.HttpOnly,
 	}
 	session.IsNew = true
 	var err error
