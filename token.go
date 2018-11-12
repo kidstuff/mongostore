@@ -1,8 +1,9 @@
 package mongostore
 
 import (
-	"github.com/gorilla/sessions"
 	"net/http"
+
+	"github.com/gorilla/sessions"
 )
 
 type TokenGetSeter interface {
