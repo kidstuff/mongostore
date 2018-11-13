@@ -8,11 +8,12 @@ package mongostore
 
 import (
 	"encoding/gob"
-	"github.com/gorilla/sessions"
-	"gopkg.in/mgo.v2"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/globalsign/mgo"
+	"github.com/gorilla/sessions"
 )
 
 type FlashMessage struct {
@@ -67,7 +68,7 @@ func TestMongoStore(t *testing.T) {
 	hdr = rsp.Header()
 	cookies, ok = hdr["Set-Cookie"]
 	if !ok || len(cookies) != 1 {
-		t.Fatalf("No cookies. Header:", hdr)
+		t.Fatalf("No cookies. Header: %v", hdr)
 	}
 
 	// Round 2 ----------------------------------------------------------------
@@ -132,7 +133,7 @@ func TestMongoStore(t *testing.T) {
 	hdr = rsp.Header()
 	cookies, ok = hdr["Set-Cookie"]
 	if !ok || len(cookies) != 1 {
-		t.Fatalf("No cookies. Header:", hdr)
+		t.Fatalf("No cookies. Header: %v", hdr)
 	}
 
 	// Round 4 ----------------------------------------------------------------
