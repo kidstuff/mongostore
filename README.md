@@ -1,11 +1,10 @@
-mongostore
-==========
+# mongostore
 
-[Gorilla's Session](http://www.gorillatoolkit.org/pkg/sessions) store implementation with MongoDB
+[Gorilla's Session](http://www.gorillatoolkit.org/pkg/sessions) store implementation with MongoDB official driver
 
 ## Requirements
 
-Depends on the [mgo](https://labix.org/v2/mgo) library.
+Depends on the [mongo-driver](https://docs.mongodb.com/ecosystem/drivers/go) library.
 
 ## Installation
 
@@ -16,17 +15,18 @@ Depends on the [mgo](https://labix.org/v2/mgo) library.
 Available on [godoc.org](http://www.godoc.org/github.com/kidstuff/mongostore).
 
 ### Example
+
 ```go
     func foo(rw http.ResponseWriter, req *http.Request) {
         // Fetch new store.
-        dbsess, err := mgo.Dial("localhost")
+        ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+        client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
         if err != nil {
             panic(err)
         }
-        defer dbsess.Close()
+        defer client.Disconnect(ctx)
 
-        store := mongostore.NewMongoStore(dbsess.DB("test").C("test_session"), 3600, true,
-            []byte("secret-key"))
+        store := mongostore.NewMongoStore(client.Database("test").Collection("test_session"), 3600, true,[]byte("secret-key"))
 
         // Get a session.
         session, err := store.Get(req, "session-key")
