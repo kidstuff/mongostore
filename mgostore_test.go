@@ -1,5 +1,6 @@
 // Copyright (c) 2013 Gregor Robinson.
 // Copyright (c) 2013 Brian Jones.
+// Copyright (c) 2021 Oyewol Samuel.
 // All rights reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
@@ -7,13 +8,16 @@
 package mongostore
 
 import (
+	"context"
 	"encoding/gob"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
-	"github.com/globalsign/mgo"
 	"github.com/gorilla/sessions"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type FlashMessage struct {
@@ -36,13 +40,22 @@ func TestMongoStore(t *testing.T) {
 	// license that can be found in the LICENSE file.
 
 	// Round 1 ----------------------------------------------------------------
-	dbsess, err := mgo.Dial("localhost")
+	mongosrv := os.Getenv("<MONGODB_URI>")
+	client, err := mongo.NewClient(options.Client().ApplyURI(mongosrv))
 	if err != nil {
 		panic(err)
 	}
-	defer dbsess.Close()
 
-	store := NewMongoStore(dbsess.DB("test").C("test_session"), 3600, true,
+	if err := client.Connect(context.Background()); err != nil {
+		panic(err)
+	}
+
+	defer client.Disconnect(context.Background())
+
+	store := NewMongoStore(
+		client.Database("test").Collection("test_session"), 
+		3600, 
+		true, 
 		[]byte("secret-key"))
 
 	req, _ = http.NewRequest("GET", "http://localhost:8080/", nil)
