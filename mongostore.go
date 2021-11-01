@@ -192,8 +192,7 @@ func (m *MongoStore) upsert(session *sessions.Session) error {
 	filter := bson.M{"_id": s.Id}
 	updateData := bson.M{"$set": s}
 
-	_, err = m.coll.UpdateOne(context.Background(), filter, updateData, opts)
-	if err != nil {
+	if _, err = m.coll.UpdateOne(context.Background(), filter, updateData, opts); err != nil {
 		return err
 	}
 
@@ -206,9 +205,8 @@ func (m *MongoStore) delete(session *sessions.Session) error {
 		return ErrInvalidId
 	}
 
-	_, deleteErr := m.coll.DeleteOne(context.Background(), bson.M{"_id": objID})
-	if err != nil {
-		return deleteErr
+	if _, err = m.coll.DeleteOne(context.Background(), bson.M{"_id": objID}); err != nil {
+		return err
 	}
 	return nil
 }
